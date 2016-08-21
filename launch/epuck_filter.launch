@@ -1,6 +1,7 @@
 <launch>
 
 <node pkg="epuck_filter" type="epuck_filter" name="epuck_filter" output="screen">
+  <rosparam command="load" file="$(find epuck_filter)/launch/epuck_filter_param.yaml" />
   <remap from="odom" to="epuck_robot_0/odom" />
   <remap from="pose" to="epuck_robot_0/position" />
 </node>

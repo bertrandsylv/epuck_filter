@@ -12,12 +12,15 @@
 //Main Filtre de Kalman odometrie + pose aprilTag
 
 
+// essai
+double essaiVar;
+
 // time instants
 ros::Time t;
 ros::Time tPrec;
 bool firstIteration = true;
 
-// filters
+//filters
 KalmanFilter* positionFilter;
 KalmanFilter* orientationFilter;
 
@@ -34,17 +37,6 @@ visualization_msgs::Marker wOdomMarker; // wheel odom
 visualization_msgs::Marker cPoseMarker; // camera
 
 
-// parameters
-//double essaiVar;
-double positionProcNoiseCov;
-double positionMeasNoiseCov;
-double positionXInit;
-double positionYInit;
-double positionInitCov;
-double orientationProcNoiseCov;
-double orientationMeasNoiseCov;
-double orientationInit;
-double orientationInitCov;
 
 
 // init markers for visu in RViz
@@ -127,26 +119,33 @@ void initFilters(){
 	// **** position filter   ****
 	positionFilter = new KalmanFilter(2,2,2);
 	positionFilter->setSys( Eigen::MatrixXd::Identity(2,2), Eigen::MatrixXd::Identity(2,2), Eigen::MatrixXd::Identity(2,2) );
-	double q_pos= positionProcNoiseCov;
-	double r_pos = positionMeasNoiseCov;
+	double q_pos= 0.05;
+	q_pos *= q_pos;
+	double r_pos = 0*0.10;
+	r_pos *= r_pos;
 	positionFilter->setNoiseCovMatrices( q_pos*Eigen::MatrixXd::Identity(2,2), r_pos*Eigen::MatrixXd::Identity(2,2) );
-	double p0_pos = positionInitCov;
+	double p0_pos = 0*0.05;
+	p0_pos *= p0_pos;
 	Eigen::VectorXd pos0 = Eigen::VectorXd::Zero(2);
-	pos0(0) = positionXInit;
-	pos0(1) = positionYInit;
+	// TO DO : position initiale à récupérer en argument au lancement
+	pos0(0) = 0.15;
+	pos0(1) = 0.005;
 	positionFilter->initFilter(pos0, p0_pos*Eigen::MatrixXd::Identity(2,2));
 
 
 	// **** orientation filter ****
 	orientationFilter = new KalmanFilter(1,1,1);
 	orientationFilter->setSys( Eigen::MatrixXd::Identity(1,1), Eigen::MatrixXd::Identity(1,1), Eigen::MatrixXd::Identity(1,1) );
-	double q_orient = orientationProcNoiseCov; 
-	double r_orient = orientationMeasNoiseCov;
+	double q_orient = 2 * 3.14/180.0;
+	q_orient *= q_orient;
+	double r_orient = 0 * 3.14/180.0;
+	r_orient *= r_orient;  
 	orientationFilter->setNoiseCovMatrices( q_orient*Eigen::MatrixXd::Identity(1,1), r_orient*Eigen::MatrixXd::Identity(1,1) );
-	double p0_yaw = orientationInitCov;
+	double p0_yaw = 0*2 * 3.14/180.0;
+	p0_yaw *= p0_yaw;
 	// TO DO : position initiale à récupérer en argument au lancement
 	Eigen::VectorXd yaw0 = Eigen::VectorXd::Zero(1);
-	yaw0(0) = orientationInit;
+	yaw0(0) = 0.0 * 3.14/180.0;
 	orientationFilter->initFilter( yaw0, p0_yaw*Eigen::MatrixXd::Identity(1,1) );
 	
 }
@@ -296,19 +295,9 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ROS_INFO("Epuck filter node started");
 
-	// parameters
-	//n.getParam("/epuck_filter/essai", essaiVar);
-	//n.param("/epuck_filter/essai", essaiVar, 23.01);
-	n.param("/epuck_filter/positionProcNoiseCov",positionProcNoiseCov, 0.05*0.05);
-	n.param("/epuck_filter/positionMeasNoiseCov",positionMeasNoiseCov, 0.01*0.01);
-	n.param("/epuck_filter/positionXInit",positionXInit, 0.0);
-	n.param("/epuck_filter/positionYInit",positionYInit, 0.0);
-	n.param("/epuck_filter/positionInitCov",positionInitCov, 0.01*0.01);
-	n.param("/epuck_filter/orientationProcNoiseCov",orientationProcNoiseCov, pow(2*3.14159265359/180.0,2) );
-	n.param("/epuck_filter/orientationMeasNoiseCov",orientationMeasNoiseCov, pow(1*3.14159265359/180.0,2) );
-	n.param("/epuck_filter/orientationInit",orientationInit, 0.0);
-	n.param("/epuck_filter/orientationInitCov",orientationInitCov, pow(5*3.14159265359/180.0,2) );
-
+	// essai param
+	n.getParam("/epuck_filter/essai", essaiVar);
+	std::cout << "essai param:"<< essaiVar << std::endl;
 
 	// published topics
 	pubFilteredOdom = n.advertise<nav_msgs::Odometry>("filteredOdom", 1000);
