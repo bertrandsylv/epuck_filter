@@ -310,9 +310,6 @@ int main(int argc, char **argv)
 	n.param("/epuck_filter/orientationInitCov",orientationInitCov, pow(5*3.14159265359/180.0,2) );
 
 
-	std::cout << "positionProcNoiseCov: " << positionProcNoiseCov << std::endl;
-
-
 	// published topics
 	pubFilteredOdom = n.advertise<nav_msgs::Odometry>("filteredOdom", 1000);
 	rvizFilteredPub = n.advertise<visualization_msgs::Marker>( "filteredMarker", 10 );
